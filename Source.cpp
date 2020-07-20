@@ -49,10 +49,11 @@ struct zaUpisPodatakaIzDatoteke {
 
 void login();
 string unosPasswordaSaAsteriksom(string password, int ch);
-int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[]);
+zaUpisPodatakaIzDatoteke uplataRatePrepis(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]);
+int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]);
 void informacije();
 void kredit(klijenti klijent[]);
-void uplataRate(zaUpisPodatakaIzDatoteke pretraga[]);
+void uplataRate(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]);
 double kalkulator(klijenti klijent[]);
 void kalkulatorprovjera();
 int brojKlijenata(zaUpisPodatakaIzDatoteke pretraga[]);
@@ -64,11 +65,14 @@ void gotoxy();
 
 
 /*--------------------------------------------------MAIN FUNKCIJA--------------------------------------------------*/
-void main() {
+int main() {
 	login();
-	zaUpisPodatakaIzDatoteke pretraga[50];
-	ispisMenijaINavigacijaKrozMeni(pretraga);
-}
+	zaUpisPodatakaIzDatoteke pretraga[30];
+	zaUpisPodatakaIzDatoteke prepis[30];
+	(void)uplataRatePrepis(pretraga, prepis);
+	ispisMenijaINavigacijaKrozMeni(pretraga, prepis);
+	return 0;
+	}
 /*--------------------------------------------------MAIN FUNKCIJA--------------------------------------------------*/
 
 /*--------------------------------------------------TIJELA FUNKCIJA--------------------------------------------------*/
@@ -190,7 +194,26 @@ string unosPasswordaSaAsteriksom(string password, int ch) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[]) {
+zaUpisPodatakaIzDatoteke uplataRatePrepis(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]) {
+	int brojKorisnika = brojKlijenata(pretraga);
+	int i = 0;
+	for (i = 0; i < brojKorisnika; i++) {
+		prepis[i].ime = pretraga[i].ime;
+		prepis[i].prezime = pretraga[i].prezime;
+		prepis[i].jmbg = pretraga[i].jmbg;
+		prepis[i].kredit = pretraga[i].kredit;
+		prepis[i].ukupnoZaVratiti = pretraga[i].ukupnoZaVratiti;
+		prepis[i].brojRata = pretraga[i].brojRata;
+		prepis[i].dan = pretraga[i].dan;
+		prepis[i].mjesec = pretraga[i].mjesec;
+		prepis[i].godina = pretraga[i].godina;
+	}
+	return prepis[i];
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]) {
 	int pointer = 0;
 	klijenti klijent[1];
 	string Menu[7] = { "Informacije", "Podizanje kredita", "Uplata rate" , "Kalkulator za provjeru", "Provjera stanja kredita kod zeljenog klijenta", "Izlaz", "Logout" };
@@ -270,12 +293,11 @@ int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[]) {
 					kredit(klijent);
 					break;
 				case 2:
-					uplataRate(pretraga);
+					uplataRate(pretraga, prepis);
 					break;
 				case 3:
 					kalkulatorprovjera();
 					break;
-
 				case 4:
 					brojKlijenata(pretraga);
 					pretragaKlijenata(pretraga);
@@ -283,7 +305,6 @@ int ispisMenijaINavigacijaKrozMeni(zaUpisPodatakaIzDatoteke pretraga[]) {
 				case 5:
 					return 0;
 					break;
-
 				case 6:
 					login();
 					break;
@@ -328,7 +349,15 @@ void informacije() {
 
 void kredit(klijenti klijent[]) {
 	ofstream blagajnik("informacijeOKlijentuBlagajnika.txt", ios::app);
+	if (blagajnik.fail()) {									//U slucaju da ima problema sa trenutnom datotekom treba zavrsiti program odma i ispsati odgovarajucu poruku
+		cout << "Ne postojeca datoteka";
+		exit(1);
+	}
 	ofstream backup("backup.txt", ios::app);
+	if (backup.fail()) {									//U slucaju da ima problema sa trenutnom datotekom treba zavrsiti program odma i ispsati odgovarajucu poruku
+		cout << "Ne postojeca datoteka";
+		exit(1);
+	}
 	system("cls");
 	for (int i = 0; i < 1; i++) {
 
@@ -456,7 +485,6 @@ void kredit(klijenti klijent[]) {
 
 		cout << endl;
 		double ukupnoZaVratiti = kalkulator(klijent);
-		Sleep(5000);
 		cout << endl;
 		cout << endl;
 		cout << endl;
@@ -494,12 +522,14 @@ void kredit(klijenti klijent[]) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void uplataRate(zaUpisPodatakaIzDatoteke pretraga[]) {
+void uplataRate(zaUpisPodatakaIzDatoteke pretraga[], zaUpisPodatakaIzDatoteke prepis[]) {
 	system("cls");
 	string ime, prezime, odluka;
 	long long int jmbg;
 	int dan, mjesec, godina;
 	int brojDana = 0, brojDanaUplata = 0;
+	int j = 0, brojZiranata = 1;
+	int brojKorisnika = brojKlijenata(pretraga);
 
 	cout << "\t\t\t\tUnesite ime klijenta: ";
 	cin >> ime;
@@ -510,17 +540,17 @@ void uplataRate(zaUpisPodatakaIzDatoteke pretraga[]) {
 	cout << endl;
 
 
-
-	int j = 0, brojZiranata = 1;
-	int brojKorisnika = brojKlijenata(pretraga);
 	for (int i = 0; i < brojKorisnika; i++) {
-		if (pretraga[i].ime == ime && pretraga[i].prezime == prezime && pretraga[i].jmbg == jmbg) {
-			brojDana = pretraga[i].dan + (pretraga[i].mjesec * 30);
+		if (prepis[i].ime == ime && prepis[i].prezime == prezime && prepis[i].jmbg == jmbg) {
+			brojDana = prepis[i].dan + (prepis[i].mjesec * 30);
 			system("cls");
-			cout << "\t\t\t\tIme i prezime klijenta: " << pretraga[i].ime << " " << pretraga[i].prezime << endl;
-			cout << "\t\t\t\tKolicina novca koju je podigao: " << pretraga[i].kredit << "KM" << endl;
-			cout << "\t\t\t\tUkupno mora vratiti: " << pretraga[i].ukupnoZaVratiti << "KM na " << pretraga[i].brojRata << " rata/rate" << endl;
+			cout << "\t\t\t\tIme i prezime klijenta: " << prepis[i].ime << " " << prepis[i].prezime << endl;
+			cout << "\t\t\t\tKolicina novca koju je podigao: " << prepis[i].kredit << "KM" << endl;
+			cout << "\t\t\t\tUkupno mora vratiti: " << prepis[i].ukupnoZaVratiti << "KM na " << prepis[i].brojRata << " rata/rate" << endl;
 			cout << "\t\t\t\tKredit je podignut " << pretraga[i].dan << "." << pretraga[i].mjesec << "." << pretraga[i].godina << endl << endl;
+			if (pretraga[i].dan != prepis[i].dan || pretraga[i].mjesec != prepis[i].mjesec)	{
+				cout << "\t\t\t\tZadnja rata je uplacena: " << prepis[i].dan << "." << prepis[i].mjesec << "." << prepis[i].godina << endl;
+			}
 			cout << "\t\t\t\tDa li zelite uplatiti ratu? ";
 			cin >> odluka;
 
@@ -535,23 +565,33 @@ void uplataRate(zaUpisPodatakaIzDatoteke pretraga[]) {
 			
 				brojDanaUplata = dan + (mjesec * 30);
 				brojDanaUplata = brojDanaUplata - brojDana;
-				if (brojDanaUplata <= 90){
-					cout << "\t\t\t\tUplatili ste ratu. Preostalo vam je da platite " << pretraga[i].kredit - (pretraga[i].kredit / pretraga[i].brojRata) << "KM" << endl;
-					cout << "\t\t\t\tTakoder vam je preostalo jos " << (pretraga[i].brojRata - 1) << " rata/rate" << endl;
+
+				if (brojDanaUplata <= 90 && brojDanaUplata > 0){
+					prepis[i].ukupnoZaVratiti = prepis[i].ukupnoZaVratiti - (prepis[i].ukupnoZaVratiti / prepis[i].brojRata);
+					prepis[i].brojRata = prepis[i].brojRata - 1;
+					cout << "\t\t\t\tUplatili ste ratu. Preostalo vam je da platite " << prepis[i].ukupnoZaVratiti << "KM" << endl;
+					cout << "\t\t\t\tTakoder vam je preostalo jos " << prepis[i].brojRata << " rata/rate" << endl;
+					prepis[i].dan = dan;
+					prepis[i].mjesec = mjesec;
 					break;
 				}
 				else if (brojDanaUplata > 90) {
 					cout << "\t\t\t\tNiste tri mjeseca uplatili ratu." << endl;
 					cout << "\t\t\t\tRatu smo uzeli od vaseg ziranta." << endl;
-					cout << "\t\t\t\tPreostalo vam je da platite " << pretraga[i].kredit - (pretraga[i].kredit / pretraga[i].brojRata) << "KM" << endl;
-					cout << "\t\t\t\tTakoder vam je preostalo jos " << (pretraga[i].brojRata - 1) << " rata/rate" << endl;
+					cout << "\t\t\t\tPreostalo vam je da platite " << prepis[i].ukupnoZaVratiti << "KM" << endl;
+					cout << "\t\t\t\tTakoder vam je preostalo jos " << prepis[i].brojRata << " rata/rate" << endl;
+					prepis[i].dan = dan;
+					prepis[i].mjesec = mjesec;
+					break;
 				}
-
+				else {
+					cout << "\t\t\t\tPogresan datum!" << endl;
+					break;
+				}
 			}
 			else {
 				break;
 			}
-
 			break;
 		}
 
@@ -600,9 +640,9 @@ double kalkulator(klijenti klijent[]) {
 void kalkulatorprovjera() {
 	system("cls");
 	cout << "\t\t\t\t\t-- KALKULATOR ZA PROVJERU --" << endl;
-	cout << "\n\t\t\tPostovani..." << endl;
+	cout << "\n\t\t\t\tPostovani..." << endl;
 	cout << endl;
-	cout << "\t\t\tOvdje mozete provjeriti, prije nego ga podignete," << endl << "\t\t\tiznos kredita sa uracunatom kamatom." << endl;
+	cout << "\t\t\t\tOvdje mozete provjeriti, prije nego ga podignete," << endl << "\t\t\t\tiznos kredita sa uracunatom kamatom." << endl;
 
 	double ukupan, kamatnaStopa = 0, mjesecnaRata;
 	double iznos;
@@ -611,9 +651,14 @@ void kalkulatorprovjera() {
 	char odgovor1;
 
 	do {
-		cout << "\t\t\tUnesite iznos koji zelite provjeriti : ";
+		cout << "\t\t\t\tUnesite iznos koji zelite provjeriti : ";
 		cin >> iznos;
-		cout << "\t\t\tUnesite na koliko godina zelite provjeriti iznos koji bi morali vratiti : ";
+		/*-----------------REKURZIJA-----------------*/
+		if (iznos < 0){
+			kalkulatorprovjera();
+			break;
+		}
+		cout << "\t\t\t\tUnesite na koliko godina zelite provjeriti iznos koji bi morali vratiti : ";
 		cin >> godine;
 		if (iznos < 10000) {
 			kamatnaStopa = 0.07;
@@ -632,10 +677,10 @@ void kalkulatorprovjera() {
 		mjesecnaRata = ukupan / ((__int64)godine * 12);
 
 		cout << endl;
-		cout << "\t\t\tUkupan iznos koji bi morali vratiti: " << ukupan << endl;
-		cout << "\t\t\tVasa mjeseca rata bi iznosila: " << mjesecnaRata << endl;
-		cout << "\t\t\tDa li zelite provjeriti drugi iznos ?" << endl;
-		cout << "\t\t\t[Y] za da, [N] za ne: ";
+		cout << "\t\t\t\tUkupan iznos koji bi morali vratiti: " << ukupan << endl;
+		cout << "\t\t\t\tVasa mjeseca rata bi iznosila: " << mjesecnaRata << endl;
+		cout << "\t\t\t\tDa li zelite provjeriti drugi iznos ?" << endl;
+		cout << "\t\t\t\t[Y] za da, [N] za ne: ";
 		cin >> odgovor1;
 		system("cls");
 	} while (odgovor1 == 'y' || odgovor1 == 'Y');
@@ -645,6 +690,10 @@ void kalkulatorprovjera() {
 
 int brojKlijenata(zaUpisPodatakaIzDatoteke pretraga[]) {
 	ifstream backup("backup.txt");
+	if (backup.fail()) {									//U slucaju da ima problema sa trenutnom datotekom treba zavrsiti program odma i ispsati odgovarajucu poruku
+		cout << "Ne postojeca datoteka";
+		exit(1);
+	}
 	int i = 0;
 	while (backup >> pretraga[i].ime >> pretraga[i].prezime >> pretraga[i].jmbg >> pretraga[i].kredit >> pretraga[i].brojRata >> pretraga[i].ukupnoZaVratiti >> pretraga[i].dan >> pretraga[i].mjesec >> pretraga[i].godina >> pretraga[i].imePrvogZiranta >> pretraga[i].prezimePrvogZiranta) {
 		if (pretraga[i].kredit > 20000) {
@@ -652,6 +701,7 @@ int brojKlijenata(zaUpisPodatakaIzDatoteke pretraga[]) {
 		}
 		i++;
 	}
+	backup.close();
 	return i;
 }
 
@@ -661,7 +711,7 @@ void pretragaKlijenata(zaUpisPodatakaIzDatoteke pretraga[]) {
 	system("cls");
 	string ime, prezime;
 	long long int jmbg;
-
+	
 	cout << "\t\t\t\tUnesite ime klijenta: ";
 	cin >> ime;
 	cout << "\t\t\t\tUnesite prezime klijenta: ";
